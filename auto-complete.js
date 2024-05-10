@@ -1,4 +1,4 @@
-export default class Autocomplete {
+export default class AutoComplete {
 
     /**
      *
@@ -62,7 +62,6 @@ export default class Autocomplete {
         this.onEventSelection = config.onEventSelection
         this.key = config.key;
         this.maxResults = config.maxResults;
-        this.destination = document.querySelector(config.destination);
         this.placeholder = config.placeholder;
         this.checkboxForChangingAutoComplete = document.querySelector(config.checkbox);
         this.manipulateData = config.manipulateData;
