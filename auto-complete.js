@@ -43,7 +43,7 @@ export default class AutoComplete {
             config.key = null;
         }
         if (config.maxResults === undefined) {
-            config.maxResults = 10;
+            config.maxResults = null;
         }
         if (config.onEventSelection === undefined || config.onEventSelection === null) {
             config.onEventSelection = function (event, item) {
@@ -166,7 +166,11 @@ export default class AutoComplete {
                     data = this.manipulateData(data);
                 }
 
-                data = data.slice(0, this.maxResults);
+                if (this.maxResults !== null) {
+                    if (data.length > this.maxResults) {
+                        data = data.slice(0, this.maxResults);
+                    }
+                }
 
                 data.forEach((item) => {
                     const itemElement = document.createElement("li");
