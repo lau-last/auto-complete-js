@@ -16,7 +16,7 @@ export default class AutoComplete {
      */
 
     constructor(config = {}) {
-
+        // Validate and set default configuration parameters
         if (config.selector === undefined) {
             throw new Error('inputElement is required');
         }
@@ -54,7 +54,7 @@ export default class AutoComplete {
             };
         }
 
-
+        // Assign properties based on configuration
         this.inputElement = document.querySelector(config.selector);
         this.apiUrl = config.url;
         this.arrayItems = config.suggestion;
@@ -65,12 +65,15 @@ export default class AutoComplete {
         this.placeholder = config.placeholder;
         this.checkboxForChangingAutoComplete = document.querySelector(config.checkbox);
         this.manipulateData = config.manipulateData;
-
-
         this.currentFocusIndex = -1;
-
         this.controller = null;
 
+        this.handleCheckboxChangeIfProvidedOrInitialize();
+
+    }
+
+    // Handle checkbox change event if checkbox is provided
+    handleCheckboxChangeIfProvidedOrInitialize() {
         if (this.checkboxForChangingAutoComplete) {
             this.checkboxForChangingAutoComplete.addEventListener('change', (event) => {
                 this.activeAutoComplete = this.checkboxForChangingAutoComplete.checked;
@@ -83,9 +86,9 @@ export default class AutoComplete {
         } else {
             this.initialize();
         }
-
     }
 
+    // Initialize the autocomplete functionality
     initialize() {
         if (this.apiUrl !== null) {
             this.initEventListenersForApi();
@@ -96,6 +99,7 @@ export default class AutoComplete {
         this.wrapElement(this.inputElement);
     }
 
+    // Destroy the autocomplete functionality
     destroy() {
         this.closeAllLists();
         this.unwrapElement(this.inputElement);
@@ -103,18 +107,21 @@ export default class AutoComplete {
         this.inputElement.placeholder = '';
     }
 
+    // Add event listeners for fetching data from API
     initEventListenersForApi() {
         this.inputElement.addEventListener('input', this.handleInputFromApi.bind(this));
         this.inputElement.addEventListener('keydown', this.handleKeydown.bind(this));
         document.addEventListener('click', this.closeAllLists.bind(this));
     }
 
+    // Add event listeners for using local data array
     initEventListenersForArray() {
         this.inputElement.addEventListener('input', this.handleInputFromArray.bind(this));
         this.inputElement.addEventListener('keydown', this.handleKeydown.bind(this));
         document.addEventListener('click', this.closeAllLists.bind(this));
     }
 
+    // Remove all event listeners
     removeEventListeners() {
         this.inputElement.removeEventListener('input', this.handleInputFromApi.bind(this));
         this.inputElement.removeEventListener('input', this.handleInputFromArray.bind(this));
@@ -123,6 +130,7 @@ export default class AutoComplete {
     }
 
 
+    // Handle input event when fetching data from API
     async handleInputFromApi(event) {
 
         if (this.activeAutoComplete === false) {
@@ -144,7 +152,7 @@ export default class AutoComplete {
         listContainer.setAttribute("class", "autocomplete-items");
         this.inputElement.parentNode.appendChild(listContainer);
 
-
+        // Fetch data from API if input length is sufficient
         if (value.length >= 3) {
 
             try {
@@ -172,6 +180,7 @@ export default class AutoComplete {
                     }
                 }
 
+                // Populate list with fetched data
                 data.forEach((item) => {
                     const itemElement = document.createElement("li");
                     itemElement.innerHTML = `<strong>${item[this.key].substr(0, value.length)}</strong>${item[this.key].substr(value.length)}`;
@@ -190,6 +199,7 @@ export default class AutoComplete {
     }
 
 
+    // Handle input event when using local data array
     handleInputFromArray(event) {
 
         if (this.activeAutoComplete === false) {
@@ -211,6 +221,7 @@ export default class AutoComplete {
         listContainer.setAttribute("class", "autocomplete-items");
         this.inputElement.parentNode.appendChild(listContainer);
 
+        // Filter and display matching suggestions from local array
         this.arrayItems.forEach((item) => {
             if (item.substr(0, value.length).toUpperCase() === value.toUpperCase()) {
                 const itemElement = document.createElement("li");
@@ -227,6 +238,7 @@ export default class AutoComplete {
         });
     }
 
+    // Handle keydown events for navigation and selection
     handleKeydown(event) {
         const list = document.getElementById(this.inputElement.id + "-autocomplete-list");
         let items = list ? list.getElementsByTagName("li") : [];
@@ -248,7 +260,7 @@ export default class AutoComplete {
         }
     }
 
-
+    // Activate the currently focused item in the list
     activateItem(items) {
         if (!items) {
             return;
@@ -270,10 +282,12 @@ export default class AutoComplete {
         });
     }
 
+    // Deactivate all items in the list
     deactivateItems(items) {
         Array.from(items).forEach(item => item.classList.remove("autocomplete-active"));
     }
 
+    // Close all suggestion lists, except the one passed as an argument
     closeAllLists(element) {
         const lists = document.getElementsByClassName("autocomplete-items");
         Array.from(lists).forEach(list => {
@@ -283,7 +297,7 @@ export default class AutoComplete {
         });
     }
 
-
+    // Wrap the input element in a div with class 'autocomplete'
     wrapElement(element) {
         if (element.parentNode && element.parentNode.classList.contains('autocomplete')) {
             return;
@@ -294,6 +308,7 @@ export default class AutoComplete {
         wrapper.appendChild(element);
     }
 
+    // Unwrap the input element from the div with class 'autocomplete'
     unwrapElement(element) {
 
         if (element && element.parentNode && element.parentNode.tagName === 'DIV' && element.parentNode.classList.contains('autocomplete')) {

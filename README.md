@@ -18,6 +18,9 @@ To instantiate an `AutoComplete` object, you must pass a configuration object wi
 - **manipulateData**: Function to manipulate the data received from the API.
 
 ## Methods
+### handleCheckboxChangeIfProvidedOrInitialize()
+Handle checkbox change event if checkbox is provided
+
 ### initialize()
 Initializes the event listeners and prepares the input element for autocomplete functionality based on the configuration.
 
