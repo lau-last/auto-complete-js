@@ -1,71 +1,73 @@
-# AutoComplete Class Documentation
+# AutoComplete Component
 
-## Introduction
-The `AutoComplete` class is designed to provide autocomplete functionality to input fields within a web page. It supports fetching suggestions from a server via API or using a static array of suggestions.
+This repository contains the implementation of an `AutoComplete` component in JavaScript. This component enables an input field with autocomplete functionality, either by fetching suggestions from an API or by using a predefined array of suggestions.
 
-## Configuration
-To instantiate an `AutoComplete` object, you must pass a configuration object with the following properties:
+## Features
 
-- **selector**: CSS selector for the input element (required).
-- **url**: URL to fetch suggestions from (mutually exclusive with `suggestion`).
-- **suggestion**: Array of suggestions (mutually exclusive with `url`).
-- **activeAutoComplete**: Boolean to activate or deactivate autocomplete.
-- **key**: Key of the object property used for displaying suggestions.
-- **maxResults**: Maximum number of suggestions to display.
-- **onEventSelection**: Callback function that triggers when a suggestion is selected.
-- **placeholder**: Placeholder text for the input field.
-- **checkbox**: CSS selector for a checkbox to toggle the autocomplete feature on/off.
-- **manipulateData**: Function to manipulate the data received from the API.
+- Fetches suggestions from an API or uses a predefined array.
+- Displays a list of suggestions as the user types.
+- Allows navigation through suggestions using keyboard arrows.
+- Supports selection of suggestions using the Enter key or mouse click.
+- Can be toggled on and off using a checkbox.
 
-## Methods
-### handleCheckboxChangeIfProvidedOrInitialize()
-Handle checkbox change event if checkbox is provided
+## Installation
 
-### initialize()
-Initializes the event listeners and prepares the input element for autocomplete functionality based on the configuration.
+To use the `AutoComplete` component in your project, you can include the source file and initialize it with the required configuration.
 
-### destroy()
-Cleans up event listeners and any other modifications made to the DOM by the autocomplete functionality.
+```html
+<script src="path/to/AutoComplete.js"></script>
+```
 
-### handleInputFromApi(event)
-Handles input event for API-based suggestions.
+## Usage
 
-### handleInputFromArray(event)
-Handles input event for array-based suggestions.
+Create an instance of the `AutoComplete` class by passing a configuration object. Below are the configuration options:
 
-### handleKeydown(event)
-Handles keydown events for navigating through suggestions.
+- **selector** (string, required): CSS selector for the input element.
+- **url** (string, optional): URL for fetching suggestions from an API.
+- **suggestion** (Array, optional): Array of suggestions.
+- **activeAutoComplete** (boolean, optional): Boolean to enable or disable autocomplete. Default is `true`.
+- **key** (string, optional): Key for accessing values in the suggestion objects.
+- **maxResults** (number, optional): Maximum number of results to display.
+- **onEventSelection** (function, optional): Callback function for selection events.
+- **placeholder** (string, optional): Placeholder text for the input element. Default is `'Autocomplete enabled'`.
+- **checkbox** (string, optional): CSS selector for a checkbox to toggle autocomplete.
+- **manipulateData** (function, optional): Function to manipulate data before display.
 
-### activateItem(items)
-Highlights the current active item in the suggestion list.
-
-### deactivateItems(items)
-Removes highlighting from all items in the suggestion list.
-
-### closeAllLists(element)
-Closes all open suggestion lists.
-
-### wrapElement(element)
-Wraps the input element with a div to control styling and positioning.
-
-### unwrapElement(element)
-Removes the wrapper div around the input element.
-
-## Example Usage
+### Example
 
 ```javascript
-const autoCompleteConfig = {
+const autoComplete = new AutoComplete({
     selector: '#myInput',
-    url: 'https://example.com/api/suggestions',
-    key: 'name',
+    url: 'https://api.example.com/suggestions?q=',
     maxResults: 5,
-    manipulateData: (data) => {
-        return data.features.map(feature => feature.properties);
+    placeholder: 'Start typing...',
+    onEventSelection: (event, item) => {
+        console.log('Selected item:', item);
     },
-    onEventSelection: function(event, item) {
-        const selectedObject = item;
-        console.log(item.name)
-    }
-};
+    manipulateData: (data) => data.map(item => item.name)
+});
+```
 
-const myAutoComplete = new AutoComplete(autoCompleteConfig);
+## Best Practices
+
+- **Modular Code**: Ensure your code is modular and reusable. Each function should have a single responsibility.
+- **Debounce API Calls**: Use debounce to limit the number of API calls when the user is typing. This prevents unnecessary load on the server.
+- **Error Handling**: Always handle errors gracefully. Provide feedback to the user in case of network issues or other errors.
+- **Accessibility**: Make sure the component is accessible. Use appropriate ARIA attributes and ensure keyboard navigation works correctly.
+- **Customization**: Provide configuration options to make the component flexible and customizable for different use cases.
+- **Performance Optimization**: Optimize performance by limiting the number of results displayed and efficiently managing event listeners.
+
+## Development
+
+To contribute to this project, follow these steps:
+
+1. Fork the repository.
+2. Create a new branch: `git checkout -b feature-branch`.
+3. Make your changes and commit them: `git commit -m 'Add some feature'`.
+4. Push to the branch: `git push origin feature-branch`.
+5. Submit a pull request.
+
+## Licence
+```
+Feel free to copy, modify the example paths and repository link according to your project structure and GitHub repository URL. Let me know if you need any further adjustments!
+```
