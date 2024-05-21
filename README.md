@@ -26,11 +26,12 @@ Create an instance of the `AutoComplete` class by passing a configuration object
 - **url** (string, optional): URL for fetching suggestions from an API.
 - **suggestion** (Array, optional): Array of suggestions.
 - **activeAutoComplete** (boolean, optional): Boolean to enable or disable autocomplete. Default is `true`.
-- **key** (string, optional): Key for accessing values in the suggestion objects.
+- **keys** (string, Array, function, optional): Key for accessing values in the suggestion objects.
 - **maxResults** (number, optional): Maximum number of results to display.
 - **onEventSelection** (function, optional): Callback function for selection events.
 - **placeholder** (string, optional): Placeholder text for the input element. Default is `'Autocomplete enabled'`.
 - **checkbox** (string, optional): CSS selector for a checkbox to toggle autocomplete.
+- **inputLength** (number, optional): Input length to trigger autocomplete.
 - **manipulateData** (function, optional): Function to manipulate data before display.
 
 ### Example
@@ -40,11 +41,16 @@ const autoComplete = new AutoComplete({
     selector: '#myInput',
     url: 'https://api.example.com/suggestions?q=',
     maxResults: 5,
+    inputLength: 3,
     placeholder: 'Start typing...',
-    onEventSelection: (event, item) => {
-        console.log('Selected item:', item);
+    checkbox: '#myCheckbox',
+    keys: ['firstname', 'lastname'],
+    manipulateData: (data) => {
+        return data.map(item => item.name)
     },
-    manipulateData: (data) => data.map(item => item.name)
+    onEventSelection: (event, item) => {
+        document.querySelector('#myInput').value = item.name;
+    },
 });
 ```
 

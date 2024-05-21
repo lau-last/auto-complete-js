@@ -7,12 +7,13 @@ export default class AutoComplete {
      * @param {string} [config.url=null] - Optional URL for fetching suggestions from an API.
      * @param {Array} [config.suggestion=null] - Optional array of suggestions.
      * @param {boolean} [config.activeAutoComplete=true] - Boolean to enable or disable autocomplete.
-     * @param {string} [config.key=null] - Optional key for accessing values in the suggestion objects.
+     * @param {Array|string|function} [config.keys=null] - Optional key for accessing values in the suggestion objects.
      * @param {number} [config.maxResults=null] - Optional maximum number of results to display.
-     * @param {function} [config.onEventSelection=(event, item) => {}] - Callback function for selection events.
+     * @param {function} [config.onEventSelection=(event, item) => {document.querySelector(selector).value = this.getItemText(item);}] - Callback function for selection events.
      * @param {string} [config.placeholder='Autocomplete enabled'] - Placeholder text for the input element.
      * @param {string} [config.checkbox=null] - Optional CSS selector for a checkbox to toggle autocomplete.
-     * @param {function} [config.manipulateData=(data) => {}] - Optional function to manipulate data before display.
+     * @param {number} [config.inputLength=null] - Optional input length to trigger autocomplete.
+     * @param {function} [config.manipulateData=(data) => {return data;}] - Optional function to manipulate data before display.
      */
     constructor(config = {}) {
         // Destructure the configuration object with default values
@@ -21,12 +22,13 @@ export default class AutoComplete {
             url = null, // Optional URL for fetching suggestions from an API
             suggestion = null, // Optional array of suggestions
             activeAutoComplete = true, // Boolean to enable or disable autocomplete
-            key = null, // Optional key for accessing values in the suggestion objects
+            keys = null, // Optional key for accessing values in the suggestion objects
             maxResults = null, // Optional maximum number of results to display
-            onEventSelection = (event, item) => {}, // Callback function for selection events
+            inputLength = null,
             placeholder = 'Autocomplete enabled', // Placeholder text for the input element
             checkbox = null, // Optional CSS selector for a checkbox to toggle autocomplete
-            manipulateData = (data) => {} // Optional function to manipulate data before display
+            manipulateData = (data) => {return data}, // Optional function to manipulate data before display
+            onEventSelection = (event, item) => { document.querySelector(selector).value = this.getItemText(item); }, // Callback function for selection events
         } = config;
 
         // Ensure a selector is provided
@@ -50,13 +52,15 @@ export default class AutoComplete {
         this.arrayItems = suggestion; // Array of suggestions
         this.activeAutoComplete = activeAutoComplete; // Autocomplete activation flag
         this.onEventSelection = onEventSelection; // Event selection callback
-        this.key = key; // Key for accessing suggestion values
+        this.keys = keys; // Key for accessing suggestion values
         this.maxResults = maxResults; // Maximum results to display
+        this.inputLength = inputLength;
         this.placeholder = placeholder; // Placeholder text
         this.checkboxForChangingAutoComplete = document.querySelector(checkbox); // Checkbox element
         this.manipulateData = manipulateData; // Data manipulation function
         this.currentFocusIndex = -1; // Index of currently focused suggestion
         this.controller = null; // Controller for aborting fetch requests
+
 
         // Bind methods to maintain correct context
         this.handleInputFromApiBound = this.debounce(this.handleInputFromApi.bind(this), 300);
@@ -134,12 +138,12 @@ export default class AutoComplete {
 
         const value = this.inputElement.value; // Get input value
         this.closeAllLists(); // Close existing suggestion lists
-
         if (!value) {
             return; // Return if input value is empty
         }
 
-        if (value.length >= 3) { // Fetch suggestions if input length is 3 or more
+        let inputLength = this.inputLength !== null ? this.inputLength : 3; // Set input length
+        if (value.length >= inputLength) { // Fetch suggestions if input length
             try {
                 if (this.controller) {
                     this.controller.abort(); // Abort previous fetch request
@@ -153,7 +157,7 @@ export default class AutoComplete {
                 }
 
                 let data = await response.json(); // Parse response JSON
-                data = this.manipulateData ? this.manipulateData(data) : data; // Manipulate data if function provided
+                data = this.manipulateData(data); // Manipulate data if function provided
                 if (this.maxResults) {
                     data = data.slice(0, this.maxResults); // Limit results if maxResults is set
                 }
@@ -174,7 +178,6 @@ export default class AutoComplete {
 
         const value = this.inputElement.value; // Get input value
         this.closeAllLists(); // Close existing suggestion lists
-
         if (!value) {
             return; // Return if input value is empty
         }
@@ -226,7 +229,6 @@ export default class AutoComplete {
         activeItem.classList.add("autocomplete-active"); // Add active class
         activeItem.setAttribute('aria-selected', 'true'); // Set aria-selected attribute
         this.inputElement.setAttribute('aria-activedescendant', activeItem.id); // Set aria-activedescendant
-
         activeItem.scrollIntoView({
             block: "nearest",
             behavior: "smooth"
@@ -281,21 +283,33 @@ export default class AutoComplete {
         };
     }
 
+    // Get item text based on key(s)
+    getItemText(item) {
+
+        let keys = this.keys;
+
+        if (Array.isArray(keys)) {
+            return keys.map(k => item[k]).filter(Boolean).join(' ');
+        } else if (typeof keys === 'string') {
+            return item[keys];
+        } else if (typeof keys === 'function') {
+            return keys(item);
+        }
+        return item;
+    }
+
     // Display suggestions in the dropdown
     displaySuggestions(data, value) {
         this.currentFocusIndex = -1; // Reset focus index
-
         const listContainer = document.createElement("ul");
         listContainer.setAttribute("id", this.inputElement.id + "-autocomplete-list"); // Set list ID
         listContainer.setAttribute("class", "autocomplete-items"); // Set list class
         this.inputElement.parentNode.appendChild(listContainer); // Append list to input element parent
-
         data.forEach((item) => {
             const itemElement = document.createElement("li");
-            const itemText = typeof item === 'string' ? item : item[this.key]; // Get item text
+            const itemText = this.getItemText(item); // Get item text
             itemElement.innerHTML = `<strong>${itemText.substr(0, value.length)}</strong>${itemText.substr(value.length)}`; // Highlight match
             itemElement.innerHTML += `<input type='hidden' value='${JSON.stringify(item)}'>`; // Store item data
-
             itemElement.addEventListener('click', (event) => {
                 this.onEventSelection(event, JSON.parse(itemElement.getElementsByTagName("input")[0].value)); // Call selection callback
                 // this.inputElement.value = itemText; // Optionally set input value
