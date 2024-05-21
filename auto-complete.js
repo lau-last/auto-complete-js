@@ -285,17 +285,18 @@ export default class AutoComplete {
 
     // Get item text based on key(s)
     getItemText(item) {
-
         let keys = this.keys;
-
+        let result = '';
         if (Array.isArray(keys)) {
-            return keys.map(k => item[k]).filter(Boolean).join(' ');
+            result = keys.map(k => String(item[k])).filter(Boolean).join(' ');
         } else if (typeof keys === 'string') {
-            return item[keys];
+            result = String(item[keys]);
         } else if (typeof keys === 'function') {
-            return keys(item);
+            result = String(keys(item));
+        } else {
+            result = String(item);
         }
-        return item;
+        return result;
     }
 
     // Display suggestions in the dropdown
