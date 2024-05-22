@@ -54,15 +54,6 @@ const autoComplete = new AutoComplete({
 });
 ```
 
-## Best Practices
-
-- **Modular Code**: Ensure your code is modular and reusable. Each function should have a single responsibility.
-- **Debounce API Calls**: Use debounce to limit the number of API calls when the user is typing. This prevents unnecessary load on the server.
-- **Error Handling**: Always handle errors gracefully. Provide feedback to the user in case of network issues or other errors.
-- **Accessibility**: Make sure the component is accessible. Use appropriate ARIA attributes and ensure keyboard navigation works correctly.
-- **Customization**: Provide configuration options to make the component flexible and customizable for different use cases.
-- **Performance Optimization**: Optimize performance by limiting the number of results displayed and efficiently managing event listeners.
-
 ## Development
 
 To contribute to this project, follow these steps:
