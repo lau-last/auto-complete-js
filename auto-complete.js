@@ -61,7 +61,6 @@ export default class AutoComplete {
         this.currentFocusIndex = -1; // Index of currently focused suggestion
         this.controller = null; // Controller for aborting fetch requests
 
-
         // Bind methods to maintain correct context
         this.handleInputFromApiBound = this.debounce(this.handleInputFromApi.bind(this), 300);
         this.handleInputFromArrayBound = this.debounce(this.handleInputFromArray.bind(this), 300);
@@ -136,19 +135,49 @@ export default class AutoComplete {
             return;
         }
 
-        const value = this.inputElement.value; // Get input value
+        let value = this.inputElement.value; // Get input value
         this.closeAllLists(); // Close existing suggestion lists
         if (!value) {
             return; // Return if input value is empty
         }
 
         let inputLength = this.inputLength !== null ? this.inputLength : 3; // Set input length
+        // if (inputLength === 0){
+        //     try {
+        //         if (this.controller) {
+        //             this.controller.abort(); // Abort previous fetch request
+        //         }
+        //         this.controller = new AbortController();
+        //         const response = await fetch(`${this.apiUrl}`, {
+        //             signal: this.controller.signal // Set abort signal
+        //         });
+        //         if (!response.ok) {
+        //             throw new Error('Network response was not ok.'); // Handle fetch error
+        //         }
+        //
+        //         let data = await response.json(); // Parse response JSON
+        //         data = this.manipulateData(data); // Manipulate data if function provided
+        //         if (this.maxResults) {
+        //             data = data.slice(0, this.maxResults); // Limit results if maxResults is set
+        //         }
+        //         value = data;
+        //
+        //         this.displaySuggestions(data, value); // Display suggestions
+        //     } catch (error) {
+        //         console.error('Failed to fetch suggestions:', error); // Handle fetch error
+        //     }
+        // }
         if (value.length >= inputLength) { // Fetch suggestions if input length
             try {
                 if (this.controller) {
                     this.controller.abort(); // Abort previous fetch request
                 }
                 this.controller = new AbortController();
+
+                if (inputLength === 0) {
+                    value = '';
+                }
+
                 const response = await fetch(`${this.apiUrl + encodeURIComponent(value)}`, {
                     signal: this.controller.signal // Set abort signal
                 });
@@ -206,7 +235,7 @@ export default class AutoComplete {
             case 13: // Enter
                 event.preventDefault(); // Prevent form submission
                 if (this.currentFocusIndex > -1) {
-                    items[this.currentFocusIndex].click(); // Select item if focused
+                    items[this.currentFocusIndex]?.click(); // Select item if focused
                 }
                 break;
         }
@@ -226,10 +255,10 @@ export default class AutoComplete {
         }
 
         const activeItem = items[this.currentFocusIndex];
-        activeItem.classList.add("autocomplete-active"); // Add active class
-        activeItem.setAttribute('aria-selected', 'true'); // Set aria-selected attribute
-        this.inputElement.setAttribute('aria-activedescendant', activeItem.id); // Set aria-activedescendant
-        activeItem.scrollIntoView({
+        activeItem?.classList.add("autocomplete-active"); // Add active class
+        activeItem?.setAttribute('aria-selected', 'true'); // Set aria-selected attribute
+        this.inputElement.setAttribute('aria-activedescendant', activeItem?.id); // Set aria-activedescendant
+        activeItem?.scrollIntoView({
             block: "nearest",
             behavior: "smooth"
         }); // Scroll into view
@@ -309,11 +338,9 @@ export default class AutoComplete {
         data.forEach((item) => {
             const itemElement = document.createElement("li");
             const itemText = this.getItemText(item); // Get item text
-            itemElement.innerHTML = `<strong>${itemText.substr(0, value.length)}</strong>${itemText.substr(value.length)}`; // Highlight match
-            itemElement.innerHTML += `<input type='hidden' value='${JSON.stringify(item)}'>`; // Store item data
+            itemElement.innerHTML = `${itemText}`; // Highlight match
             itemElement.addEventListener('click', (event) => {
-                this.onEventSelection(event, JSON.parse(itemElement.getElementsByTagName("input")[0].value)); // Call selection callback
-                // this.inputElement.value = itemText; // Optionally set input value
+                this.onEventSelection(event, item); // Call selection callback
                 this.closeAllLists(); // Close suggestion lists
             });
             listContainer.appendChild(itemElement); // Append item to list
